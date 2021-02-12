@@ -1,1 +1,4 @@
 # staking-smartcontract
+
+### Mainnet: 0xa090C2A3A5Ab0A5196E35174Fd1B40C13BD580c7
+### Ropsten: 0xF2c2050a2584bfCc6DC311e4b99181DF8a50a0a7

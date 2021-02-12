@@ -1,8 +1,226 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "./Ownable.sol";
-import "./SafeMath.sol";
-import "./ERC20Interface.sol";
+contract Constant {
+    string constant ERR_CONTRACT_SELF_ADDRESS = "ERR_CONTRACT_SELF_ADDRESS";
+    string constant ERR_ZERO_ADDRESS = "ERR_ZERO_ADDRESS";
+    string constant ERR_NOT_OWN_ADDRESS = "ERR_NOT_OWN_ADDRESS";
+    string constant ERR_VALUE_IS_ZERO = "ERR_VALUE_IS_ZERO";
+    string constant ERR_AUTHORIZED_ADDRESS_ONLY = "ERR_AUTHORIZED_ADDRESS_ONLY";
+    string constant ERR_NOT_ENOUGH_BALANCE = "ERR_NOT_ENOUGH_BALANCE";
+
+    modifier notOwnAddress(address _which) {
+        require(msg.sender != _which, ERR_NOT_OWN_ADDRESS);
+        _;
+    }
+
+    // validates an address is not zero
+    modifier notZeroAddress(address _which) {
+        require(_which != address(0), ERR_ZERO_ADDRESS);
+        _;
+    }
+
+    // verifies that the address is different than this contract address
+    modifier notThisAddress(address _which) {
+        require(_which != address(this), ERR_CONTRACT_SELF_ADDRESS);
+        _;
+    }
+
+    modifier notZeroValue(uint256 _value) {
+        require(_value > 0, ERR_VALUE_IS_ZERO);
+        _;
+    }
+}
+
+contract Ownable is Constant {
+
+    address payable public owner;
+    address payable public newOwner;
+
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
+
+    /**
+     * @dev Initializes the contract setting the deployer as the initial owner.
+     */
+    constructor() internal {
+        _transferOwnership(msg.sender);
+    }
+
+    function _transferOwnership(address payable _whom) internal {
+        emit OwnershipTransferred(owner,_whom);
+        owner = _whom;
+    }
+
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(owner == msg.sender, ERR_AUTHORIZED_ADDRESS_ONLY);
+        _;
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address payable _newOwner)
+    external
+    virtual
+    notZeroAddress(_newOwner)
+    onlyOwner
+    {
+        // emit OwnershipTransferred(owner, newOwner);
+        newOwner = _newOwner;
+    }
+
+    function acceptOwnership() external
+    virtual
+    returns (bool){
+        require(msg.sender == newOwner,"ERR_ONLY_NEW_OWNER");
+        owner = newOwner;
+        emit OwnershipTransferred(owner, newOwner);
+        newOwner = address(0);
+        return true;
+    }
+}
+
+contract SafeMath {
+    /**
+      * @dev Returns the subtraction of two unsigned integers, reverting on
+      * overflow (when the result is negative).
+      *
+      * Counterpart to Solidity's `-` operator.
+      *
+      * Requirements:
+      *
+      * - Subtraction cannot overflow.
+      */
+    function safeSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return safeSub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function safeSub(uint256 a, uint256 b, string memory error) internal pure returns (uint256) {
+        require(b <= a, error);
+        uint256 c = a - b;
+        return c;
+    }
+
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function safeAdd(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+        return c;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
+    function safeMul(uint256 a, uint256 b) internal pure returns (uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function safeDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+        return safeDiv(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function safeDiv(uint256 a, uint256 b, string memory error) internal pure returns (uint256) {
+        require(b > 0, error);
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
+        return c;
+    }
+
+    function safeExponent(uint256 a,uint256 b) internal pure returns (uint256) {
+        uint256 result;
+        assembly {
+            result:=exp(a, b)
+        }
+        return result;
+    }
+}
+
+interface ERC20Interface
+{
+    function totalSupply() external view returns(uint256);
+
+    function balanceOf(address _tokenOwner)external view returns(uint balance );
+
+    function allowance(address _tokenOwner, address _spender)external view returns (uint supply);
+
+    function transfer(address _to,uint _tokens)external returns(bool success);
+
+    function approve(address _spender,uint _tokens)external returns(bool success);
+
+    function transferFrom(address _from,address _to,uint _tokens)external returns(bool success);
+
+    event Transfer(address indexed _from, address indexed _to, uint256 _tokens);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _tokens);
+}
 
 contract StakeStorage {
 

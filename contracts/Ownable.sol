@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity  ^0.6.0;
+pragma solidity ^0.6.0;
 
 import "./Constant.sol";
 
@@ -16,28 +16,26 @@ import "./Constant.sol";
  * the owner.
  */
 contract Ownable is Constant {
-    
+
     address payable public owner;
-    
     address payable public newOwner;
 
     event OwnershipTransferred(
         address indexed previousOwner,
         address indexed newOwner
     );
-    
+
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
     constructor() internal {
-        _trasnferOwnership(msg.sender);
+        _transferOwnership(msg.sender);
     }
-    
-    function _trasnferOwnership(address payable _whom) internal {
-        emit OwnershipTransferred(owner,_whom);
+
+    function _transferOwnership(address payable _whom) internal {
+        emit OwnershipTransferred(owner, _whom);
         owner = _whom;
     }
-    
 
     /**
      * @dev Throws if called by any account other than the owner.
@@ -52,24 +50,22 @@ contract Ownable is Constant {
      * Can only be called by the current owner.
      */
     function transferOwnership(address payable _newOwner)
-        external
-        virtual
-        notZeroAddress(_newOwner)
-        onlyOwner
+    external
+    virtual
+    notZeroAddress(_newOwner)
+    onlyOwner
     {
         // emit OwnershipTransferred(owner, newOwner);
         newOwner = _newOwner;
     }
-    
+
     function acceptOwnership() external
-        virtual
-        returns (bool){
-            require(msg.sender == newOwner,"ERR_ONLY_NEW_OWNER");
-            owner = newOwner;
-            emit OwnershipTransferred(owner, newOwner);
-            newOwner = address(0);
-            return true;
-        }
-    
-    
+    virtual
+    returns (bool){
+        require(msg.sender == newOwner, "ERR_ONLY_NEW_OWNER");
+        owner = newOwner;
+        emit OwnershipTransferred(owner, newOwner);
+        newOwner = address(0);
+        return true;
+    }
 }
