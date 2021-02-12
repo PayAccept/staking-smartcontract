@@ -9,3 +9,8 @@ browser/PayStaking.sol :
 dweb:/ipfs/QmVJtDE9shTQEt3XzfxQZp1w6VUwnmEs2CQ7GFUyFgBq4W
 metadata.json :
 dweb:/ipfs/QmZ5dGnv763wY6RSkYGWrmJ66P2SmSkWubw9VhA12uVP3F
+
+## Tokens which can be staked
+
+PAYT - 0x8EF47555856f6Ce2E0cd7C36AeF4FAb317d2e2E2
+NEXT - 0x166200cd8db2474ab4aa323261fa5a7e97a98dd5
